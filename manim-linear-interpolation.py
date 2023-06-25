@@ -111,6 +111,8 @@ class LinearInterpolation(MovingCameraScene):
         self.output_values = []
         self.output_value_indexes = []
         self.output_values_table = None
+
+        old_interpolation_table = None
         
         self.output_values_fake = []
         for i in self.input_values:
@@ -155,9 +157,6 @@ class LinearInterpolation(MovingCameraScene):
             if whole_number >= len(self.input_values):
                 return
             
-            if (interpolationTable != None):
-                self.remove(interpolationTable)
-
             f_zero_str = r"f("+str(whole_number)+")"
             f_zero = MathTex( f_zero_str )
             f_zero.set_color(GREEN)
@@ -214,6 +213,8 @@ class LinearInterpolation(MovingCameraScene):
                 self.play( FadeIn(row2),run_time=0.5 )
             group.add(row2)  
 
+            if interpolationTable != None:
+                self.play( FadeOut (interpolationTable), run_time=0.5)
 
             interpolationTable = self.makeInterpolationTable(
                 f_zero,
@@ -233,7 +234,14 @@ class LinearInterpolation(MovingCameraScene):
             interpolationTable.submobjects[1].remove(interpolation_f1_time_r)
             interpolationTable.submobjects[1].remove(finalresult)
 
-            self.add(interpolationTable)
+            if old_interpolation_table != None:
+                self.play( 
+                    FadeOut(old_interpolation_table),
+                    FadeIn(interpolationTable), 
+                    run_time=0.5) 
+            else:
+                self.play( FadeIn(interpolationTable, run_time=0.5) )
+            old_interpolation_table = interpolationTable
 
             if (self.highlightedCell2 != None):
                 self.play( FadeOut(self.highlightedCell2, run_time=0.1) )
