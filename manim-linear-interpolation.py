@@ -121,7 +121,7 @@ class LinearInterpolation(MovingCameraScene):
         self.output_values_graph = self.makeGraph(self.output_values_fake, UP * 0.5)
         self.add(self.output_values_graph)
 
-        rate = 0.5
+        rate = 0.25
         position = 0.0
         whole_number = 0
         remainder = 0.0
@@ -153,7 +153,7 @@ class LinearInterpolation(MovingCameraScene):
         #return
     
         #for i in range(len(self.input_values)):        
-        for i in range(4):        
+        for i in range(5):        
             if whole_number >= len(self.input_values):
                 return
             
@@ -213,9 +213,6 @@ class LinearInterpolation(MovingCameraScene):
                 self.play( FadeIn(row2),run_time=0.5 )
             group.add(row2)  
 
-            if interpolationTable != None:
-                self.play( FadeOut (interpolationTable), run_time=0.5)
-
             interpolationTable = self.makeInterpolationTable(
                 f_zero,
                 f_one, 
@@ -237,10 +234,9 @@ class LinearInterpolation(MovingCameraScene):
             if old_interpolation_table != None:
                 self.play( 
                     FadeOut(old_interpolation_table),
-                    FadeIn(interpolationTable), 
-                    run_time=0.5) 
+                    FadeIn(interpolationTable)) 
             else:
-                self.play( FadeIn(interpolationTable, run_time=0.5) )
+                self.play( FadeIn(interpolationTable) )
             old_interpolation_table = interpolationTable
 
             if (self.highlightedCell2 != None):
@@ -253,17 +249,21 @@ class LinearInterpolation(MovingCameraScene):
             if last_whole_number != whole_number:
 
                 whole_number_highlite = SurroundingRectangle(row2.submobjects[2], GREEN)
+                f0_highlite = SurroundingRectangle(interpolationTable.submobjects[0].submobjects[0], GREEN)
+                f1_highlite = SurroundingRectangle(interpolationTable.submobjects[0].submobjects[1], GREEN)
 
-                #self.camera.frame.save_state()
                 self.play(
-                    #self.camera.frame.animate.move_to(row2.submobjects[2]).scale(0.9),
                     Create(whole_number_highlite),
+                    Create(f0_highlite),
+                    Create(f1_highlite),
                     run_time=1)
 
                 self.wait(1)
+
                 self.play(
-                    #self.camera.frame.animate.restore(), 
-                    FadeOut(whole_number_highlite))
+                    FadeOut(whole_number_highlite),
+                    FadeOut(f0_highlite),
+                    FadeOut(f1_highlite))
 
                 cell = sampleTable[0]
                 self.play(cell.animate.set_opacity(0),run_time=0.2)
