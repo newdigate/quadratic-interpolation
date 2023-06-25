@@ -113,7 +113,10 @@ class LinearInterpolation(MovingCameraScene):
         self.output_values_table = None
 
         old_interpolation_table = None
-        
+        whole_number_highlite = None
+        f0_highlite = None
+        f1_highlite = None
+
         self.output_values_fake = []
         for i in self.input_values:
             self.output_values_fake.append(0)
@@ -121,7 +124,7 @@ class LinearInterpolation(MovingCameraScene):
         self.output_values_graph = self.makeGraph(self.output_values_fake, UP * 0.5)
         self.add(self.output_values_graph)
 
-        rate = 0.25
+        rate = 1.5
         position = 0.0
         whole_number = 0
         remainder = 0.0
@@ -152,8 +155,8 @@ class LinearInterpolation(MovingCameraScene):
         last_row = row
         #return
     
-        #for i in range(len(self.input_values)):        
-        for i in range(5):        
+        for i in range(len(self.input_values)):        
+        #for i in range(10):        
             if whole_number >= len(self.input_values):
                 return
             
@@ -192,27 +195,13 @@ class LinearInterpolation(MovingCameraScene):
 
             interpolated_value = int(round(value * (1 - remainder) + (valueNext * remainder)))
 
+
+
             f_one_times_by_rem_group_copy = VGroup( f_one.copy(), f_one_times_by_rem.copy())
             plusText = Text(" + ").next_to(f_one_times_by_rem_group_copy, RIGHT )
             f_zero_times_by_rem_minus_one_group_copy = VGroup(f_zero2.copy(), f_zero_times_by_rem_minus_one.copy()).next_to(plusText, RIGHT )
             finalFormula = VGroup(f_one_times_by_rem_group_copy, plusText, f_zero_times_by_rem_minus_one_group_copy)
-
-            row2 = self.makeRow(
-                '{0:.2f}'.format(rate), 
-                '{0:.2f}'.format(position),
-                str(whole_number),
-                str('{0:.2f}'.format(one_minus_remainder)),
-                str('{0:.2f}'.format(remainder)))
-            
-            if (last_row != row):
-                group.remove(last_row)   
-                row2.next_to(last_row, DOWN*0)
-                self.play( FadeIn(row2), FadeOut(last_row),run_time=0.5 )
-            else:
-                row2.next_to(row, DOWN)
-                self.play( FadeIn(row2),run_time=0.5 )
-            group.add(row2)  
-
+                
             interpolationTable = self.makeInterpolationTable(
                 f_zero,
                 f_one, 
@@ -230,6 +219,43 @@ class LinearInterpolation(MovingCameraScene):
             interpolationTable.submobjects[1].remove(interpolation_f0_times_1_minus_r)
             interpolationTable.submobjects[1].remove(interpolation_f1_time_r)
             interpolationTable.submobjects[1].remove(finalresult)
+                
+            row2 = self.makeRow(
+                '{0:.2f}'.format(rate), 
+                '{0:.2f}'.format(position),
+                str(whole_number),
+                str('{0:.2f}'.format(one_minus_remainder)),
+                str('{0:.2f}'.format(remainder)))
+
+            if (last_row != row):
+                group.remove(last_row)   
+                row2.next_to(last_row, DOWN*0)                              
+            else:
+                row2.next_to(row, DOWN)
+
+            if last_whole_number != whole_number:
+                whole_number_highlite = SurroundingRectangle(row2.submobjects[2], GREEN)
+                f0_highlite = SurroundingRectangle(interpolationTable.submobjects[0].submobjects[0], GREEN)
+                f1_highlite = SurroundingRectangle(interpolationTable.submobjects[0].submobjects[1], GREEN)
+
+            if (last_row != row):
+                if whole_number_highlite != None:
+                    self.play( 
+                        FadeIn(row2), 
+                        FadeOut(last_row), 
+                        Create(whole_number_highlite),
+                        Create(f0_highlite),
+                        Create(f1_highlite))
+                else:
+                    self.play( 
+                        FadeIn(row2), 
+                        FadeOut(last_row))                    
+            else:
+                self.play( FadeIn(row2) )    
+
+            group.add(row2)  
+
+            
 
             if old_interpolation_table != None:
                 self.play( 
@@ -247,26 +273,14 @@ class LinearInterpolation(MovingCameraScene):
                 self.play( Create(self.highlightedCell))
             
             if last_whole_number != whole_number:
-
-                whole_number_highlite = SurroundingRectangle(row2.submobjects[2], GREEN)
-                f0_highlite = SurroundingRectangle(interpolationTable.submobjects[0].submobjects[0], GREEN)
-                f1_highlite = SurroundingRectangle(interpolationTable.submobjects[0].submobjects[1], GREEN)
-
-                self.play(
-                    Create(whole_number_highlite),
-                    Create(f0_highlite),
-                    Create(f1_highlite),
-                    run_time=1)
-
-                self.wait(1)
-
                 self.play(
                     FadeOut(whole_number_highlite),
                     FadeOut(f0_highlite),
                     FadeOut(f1_highlite))
+                whole_number_highlite = None
 
                 cell = sampleTable[0]
-                self.play(cell.animate.set_opacity(0),run_time=0.2)
+                self.play(cell.animate.set_opacity(0),run_time=0.5)
 
                 last_whole_number = whole_number
 
@@ -295,6 +309,10 @@ class LinearInterpolation(MovingCameraScene):
 
             self.output_values_table = self.createOutputSampleTable(self.output_value_indexes, self.output_values)
             self.output_values_table.align_to(sampleTable, UP)
+            if i > 5:
+                heightToShift = self.output_values_table.get_cell((2+i, 2)).height
+                self.output_values_table.shift(UP * heightToShift * (i - 5))
+
             result_cell = self.output_values_table.get_cell((2+i, 2))
 
             #self.output_values_table.shift(RIGHT)
